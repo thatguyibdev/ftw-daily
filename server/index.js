@@ -67,11 +67,12 @@ log.setup();
 // to Sentry.
 app.use(log.requestHandler());
 
-// The helmet middleware sets various HTTP headers to improve security.
-// See: https://www.npmjs.com/package/helmet
-app.use(helmet());
 
 if (cspEnabled) {
+  // The helmet middleware sets various HTTP headers to improve security.
+  // See: https://www.npmjs.com/package/helmet
+  app.use(helmet());
+
   // When a CSP directive is violated, the browser posts a JSON body
   // to the defined report URL and we need to parse this body.
   app.use(
@@ -86,6 +87,13 @@ if (cspEnabled) {
   // mode, the browser also blocks the requests.
   const reportOnly = CSP === 'report';
   app.use(csp(cspReportUrl, USING_SSL, reportOnly));
+} else {
+  // Helmet 4 does not disable CSP by default so we need to
+  // disable it manually if the CSP is not enabled
+
+  app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 }
 
 // Redirect HTTP to HTTPS if USING_SSL is `true`.
